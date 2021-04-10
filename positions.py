@@ -1,6 +1,4 @@
-
 class Transaction:
-
     datetime = None
     price = 0
     quantity = 0
@@ -8,9 +6,7 @@ class Transaction:
     def get_value(self):
         return self.price * self.quantity
 
-
 class Position:
-
     quantity = 0
     average_price = 0
 
@@ -74,7 +70,6 @@ class Position:
         # print(self.strategy.transactions)
 
     def increase_position(self, transaction=None):
-        # print(transaction)
         value = transaction['value']
         # blocked_value = abs(value)
         blocked_value = value
@@ -82,35 +77,24 @@ class Position:
         old_value = self.quantity * self.average_price
         total_value = value + old_value
         average_price = total_value / (self.quantity + transaction['quantity'])
-
-        # if self.strategy.amount <= 0:
-            # print(f"strategy amount: {self.strategy.amount}")
-        # print(f"blocked value: {blocked_value}")
         if self.strategy.amount < blocked_value:
             raise Exception('Cannot place orders')
-
         self.average_price = average_price
-
         self.blocked_margin = blocked_value
         # self.strategy.amount -= blocked_value
         self.strategy.amount += blocked_value
-
 
     def decrease_position(self, transaction=None):
         value = transaction['value']
         # blocked_value = abs(value)
         blocked_value = value
-
-
         old_value = self.quantity * self.average_price
         total_value = value + old_value
-
         final_quantity = (self.quantity + transaction['quantity'])
         if final_quantity == 0:
             average_price = 0
         else:
             average_price = total_value / final_quantity
-
         self.average_price = average_price
         self.blocked_margin = 0
         self.strategy.amount += blocked_value
@@ -118,7 +102,6 @@ class Position:
     def get_unrealized(self, code):
         original_value = self.quantity * self.average_price
         df = self.strategy.dataframes.get(code)
-        # print(df)
         current_row = self.strategy.get_current_row_from_dataframe(df)
         price = current_row['Close']
         current_value = self.quantity * price

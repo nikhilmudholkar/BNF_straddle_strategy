@@ -20,10 +20,12 @@ class BaseStrategy:
 
     transactions = []
 
-    def __init__(self, amount=None, config=dict()):
+    def __init__(self, amount=None, params=None, config=dict()):
         self.amount = amount
         self.original_amount = amount
         self.config = config
+        for key, value in params.items():
+            exec(f"self.{key}" + " = value")
 
     def add_dataframe(self, df, code, is_primary=False):
         if is_primary:
@@ -118,25 +120,17 @@ class BaseIntradayStrategy(BaseStrategy):
             self.process_daily_candle()
 
             for i, r in self.dataframes[self.code_ce].iterrows():
-                # print(i)
                 if i in self.dataframes[self.code_pe].index:
-
-                    # print(i)
-                    # print(self.dataframes['BNF_OPTIONS_FILTERED_PE'].loc[i])
                     self.current_row_ce = r
                     self.current_row_pe = self.dataframes[self.code_pe].loc[i]
                     self.current_loc = i
                     self.current_iloc = counter
                     counter += 1
-                    # if counter < 500:
-                    #     continue
-
                     try:
                         self.pre_process_candle()
                         self.process_candle()
                         self.process_eod_candle()
                     except Exception as e:
-                        # print(e)
                         pass
                 else:
                     counter += 1
@@ -145,7 +139,6 @@ class BaseIntradayStrategy(BaseStrategy):
         cr_ce = self.current_row_ce
         cr_pe = self.current_row_pe
         cd = self.current_loc.date()
-
         self.current_time = self.current_loc.time()
         expiry_name = pd.to_datetime(cr_ce['Expiry']).strftime('%d%b%Y')
         self.expiry = expiry_name
@@ -159,18 +152,14 @@ class BaseIntradayStrategy(BaseStrategy):
             log['amount'] = self.amount
             log['unrealized'] = 0
             for code, p in self.positions.items():
-                # print(f"code: {code},  unrealized profits: {p.get_unrealized(code = code)}")
                 if p.quantity != 0:
                     log['unrealized'] += p.get_unrealized(code=code)
-
             self.daily_log.append(log)
 
     def pre_process_daily_candle(self):
         cr = self.spot_current_row
         cd = self.spot_current_loc.date()
-
         # self.current_time = self.current_loc.time()
-
         if self.current_date is None:
             self.day_open = cr['Open']
             self.day_high = cr['High']
