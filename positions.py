@@ -19,12 +19,17 @@ class Position:
 
     def transact(self, price=None, quantity=None, info=None):
         old_quantity = self.quantity
-
+        # print(old_quantity)
         final_quantity = self.quantity + quantity
         df = self.strategy.dataframes.get(self.code)
+        # print(df)
+        # print("#######")
+        # print(self.current_loc)
         current_row = self.strategy.get_current_row_from_dataframe(df)
+        # print(current_row)
         if price is None:
-            price = current_row['close']
+            # print(price)
+            price = current_row['Close']
 
         # transaction = Transaction()
         # transaction.datetime = self.strategy.current_loc
@@ -102,6 +107,7 @@ class Position:
     def get_unrealized(self, code):
         original_value = self.quantity * self.average_price
         df = self.strategy.dataframes.get(code)
+        # print(df)
         current_row = self.strategy.get_current_row_from_dataframe(df)
         price = current_row['Close']
         current_value = self.quantity * price
